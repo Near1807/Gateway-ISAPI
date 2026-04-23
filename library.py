@@ -1,7 +1,7 @@
 from config import *
-import requests
+import requests #recherches files d'attentes et burst
 from requests.auth import HTTPDigestAuth
-from opcua import Client
+from opcua import *
 import xmltodict
 
 def Request_Change_Door_State(door_state):
@@ -66,56 +66,11 @@ def Request_Door_State():
 
 
 
-def PLC_Polling(url_Serveur_PLC):
-    """
-    Poll the PLC for the state of the door and update it accordingly.
-        - url_Serveur_PLC: The URL of the PLC server to connect to.
-    """
-    
-    client = Client(url_Serveur_PLC)
-    client.set_security_string(f"Basic256Sha256,SignAndEncrypt,{client_certificate_path},{client_key_path}")
-    try : 
-        client.connect()
-        print("Connected to PLC")
-    except Exception as e:
-        print("Error connecting to PLC : ", e)
-        return
-    
-
-    while True :
-        previous_Door_State = False
-        try :
-            Door= client.get_node(Door_NodeId)
-            Door_State = Door.get_value()
-            if Door_State != previous_Door_State :
-                if Door_State == True :
-                    Request_Change_Door_State(True)
-                else :
-                    Request_Change_Door_State(False)
-
-                print(f"New door State {Door_State}")
-                previous_Door_State = Door_State
-
-        except Exception as e:
-            print("Error reading Tag1 : ", e)
-
-
-
-
-def NewGuidConnexion(Guid):
+def NewGuidConnexion(client, Guid):
     """
     Handle a new connection of a tag by updating the PLC with the new Guid.
         - Guid: The Guid of the newly connected tag.
     """
-    client = Client(url_Serveur_PLC)
-    client.set_security_string(f"Basic256Sha256,SignAndEncrypt,{client_certificate_path},{client_key_path}")
-    try : 
-        client.connect()
-        print("Connected to PLC")
-    except Exception as e:
-        print("Error connecting to PLC : ", e)
-        return
-    
     try :
         Guid_Node = client.get_node(Guid_NodeId)
         Guid_Node.set_value(Guid)
