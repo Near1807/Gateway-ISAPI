@@ -68,8 +68,9 @@ def PLC_Polling(url_Serveur_PLC):
             check_state_timer = 0
             Request_Door_State()
 
-
-        sleep(sleep_time) and check_state_timer += sleep_time
+        check_state_timer += sleep_time
+        sleep(sleep_time)
+        
 
 
 
