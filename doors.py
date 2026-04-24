@@ -1,6 +1,8 @@
 import requests
 from requests.auth import HTTPDigestAuth
 import xmltodict
+from config import *
+from opcua import *
 
 
 class Door:
@@ -13,7 +15,7 @@ class Door:
         - Les flags OPC-UA avec reset automatique par timer
     """
 
-    def __init__(self, name, reader_ip, reader_user, reader_psw, door_state_output_id,
+    def __init__(self,reader_id, name, reader_ip,reader_port, reader_user, reader_psw, door_state_output_id,
                  guid_node_id, door_node_id, door_state_node_id,
                  guid_flag_node_id, door_state_flag_node_id,
                  guid_flag_reset_time=5, door_state_flag_reset_time=10):
@@ -36,11 +38,14 @@ class Door:
         """
 
         # --- Infos lecteur ---
+        self.reader_id = reader_id
         self.name = name
         self.reader_ip = reader_ip
+        self.reader_port = reader_port
         self.reader_user = reader_user
         self.reader_psw = reader_psw
         self.door_state_output_id = door_state_output_id
+        self.host_id = 1
 
         # --- Nodes PLC ---
         self.guid_node_id = guid_node_id
@@ -93,7 +98,7 @@ class Door:
         Returns:
             True si la requête a réussi, False sinon
         """
-        url = f"http://{self.reader_ip}/ISAPI/System/IO/outputs/1/trigger"
+        url = f"http://{self.reader_ip}:{self.reader_port}/ISAPI/System/IO/outputs/1/trigger"
         xml_body = f"""<?xml version="1.0" encoding="UTF-8"?>
             <IOPortData xmlns="http://www.isapi.org/ver20/XMLSchema">
                 <outputState>{"high" if state else "low"}</outputState>
@@ -103,7 +108,8 @@ class Door:
                 url,
                 data=xml_body.encode("utf-8"),
                 headers={"Content-Type": 'application/xml; charset="UTF-8"'},
-                auth=HTTPDigestAuth(self.reader_user, self.reader_psw)
+                auth=HTTPDigestAuth(self.reader_user, self.reader_psw),
+                timeout = Timeout
             )
             print(f"[{self.name}] Trigger reader: {response.status_code}")
             return response.ok
@@ -120,9 +126,9 @@ class Door:
         Args:
             client  : Client OPC-UA connecté
         """
-        url = f"http://{self.reader_ip}/ISAPI/System/IO/outputs/{self.door_state_output_id}/status"
+        url = f"http://{self.reader_ip}:{self.reader_port}/ISAPI/System/IO/outputs/{self.door_state_output_id}/status"
         try:
-            response = requests.get(url, auth=HTTPDigestAuth(self.reader_user, self.reader_psw))
+            response = requests.get(url, auth=HTTPDigestAuth(self.reader_user, self.reader_psw),timeout = Timeout)
             if response.ok:
                 data = xmltodict.parse(response.text)
                 state = data["IOPortStatus"]["ioPortStatus"]
@@ -176,3 +182,86 @@ class Door:
                     node = client.get_node(flag["NodeId"])
                     node.set_value(False)
                     print(f"[{self.name}] Flag {flag_name} reset")
+
+
+
+    def setup_listener(self):
+        """
+        Configure le lecteur Hikvision pour qu'il pousse chaque scan RFID
+        vers le serveur HTTP (mode Listening / Push).
+
+        Enchaîne 3 requêtes ISAPI dans l'ordre :
+        1. GET  /ISAPI/Event/notification/httpHosts/capabilities  → vérif device joignable
+        2. PUT  /ISAPI/Event/notification/httpHosts               → enregistre le serveur
+        3. POST /ISAPI/Event/notification/httpHosts/<id>/test     → test la connexion
+
+        Returns:
+            True  si les 3 étapes ont réussi
+            False si le test de connexion a échoué (config envoyée mais injoignable)
+
+        Raises:
+            ConnectionError : device injoignable ou credentials incorrects
+            RuntimeError    : la config PUT a été refusée par le device
+        """
+
+        base_url     = f"http://{self.reader_ip}:{self.reader_port}"
+        callback_url = f"http://{Uvicorn_Host}:{Uvicorn_Port}/rfid/event"
+        auth         = HTTPDigestAuth(self.reader_user, self.reader_psw)
+        headers      = {"Content-Type": "application/xml"}
+
+    # ── Étape 1 : vérification que le device répond ────────────────────────────
+        try:
+            resp = requests.get(
+                f"{base_url}/ISAPI/Event/notification/httpHosts/capabilities",
+                auth=auth,
+                timeout=Timeout
+            )
+        except requests.exceptions.ConnectionError:
+            raise ConnectionError(f"[{self.reader_ip}] Device injoignable sur {base_url}")
+    
+        if resp.status_code == 401:
+            raise ConnectionError(f"[{self.reader_ip}] Authentification échouée — vérifier user/password")
+        if resp.status_code != 200:
+            raise ConnectionError(f"[{self.reader_ip}] Réponse inattendue : HTTP {resp.status_code}")
+    # ── Étape 2 : enregistrement du serveur comme destination push ─────────
+        payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+            <HttpHostNotification xmlns="http://www.isapi.org/ver20/XMLSchema" version="2.0">
+            <id>{self.host_id}</id>
+            <url>{callback_url}</url>
+            <protocolType>HTTP</protocolType>
+            <parameterFormatType>JSON</parameterFormatType>
+            <addressingFormatType>ipaddress</addressingFormatType>
+            <hostName>{Uvicorn_Host}</hostName>
+            <portNo>{Uvicorn_Port}</portNo>
+            <httpAuthenticationMethod>none</httpAuthenticationMethod>
+            </HttpHostNotification>"""
+    
+        resp = requests.put(
+            f"{base_url}/ISAPI/Event/notification/httpHosts",
+            data=payload,
+            headers=headers,
+            auth=auth,
+            timeout=Timeout,
+        )
+    
+        if resp.status_code not in (200, 201):
+            raise RuntimeError(
+                f"[{self.reader_ip}] Échec configuration httpHosts : "
+                f"HTTP {resp.status_code} — {resp.text}"
+            )
+    # ── Étape 3 : test — le device fait un POST vers ton serveur ───────────────
+        resp = requests.post(
+            f"{base_url}/ISAPI/Event/notification/httpHosts/{self.host_id}/test",
+            auth=auth,
+            timeout=Timeout,
+        )
+    
+        if resp.status_code == 200:
+            print(f"[{self.reader_ip}] Test OK ✓ — prêt à recevoir les scans")
+            return True
+        else:
+            print(
+                f"[{self.reader_ip}] Test échoué (HTTP {resp.status_code}) — "
+                f"le device ne peut pas joindre {Uvicorn_Host}:{Uvicorn_Port}"
+            )
+            return False

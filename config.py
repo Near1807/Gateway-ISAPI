@@ -1,4 +1,4 @@
-from classes import Door
+from doors import Door
 
 Url_Serveur_PLC = "opc.tcp://192.168.1.10:4840"
 URL_Event_Notification = "/events/rfid"
@@ -8,7 +8,11 @@ Client_key_path = "path/to/key.pem"
 
 Uvicorn_Host = "0.0.0.0"
 Uvicorn_Port = 8080
-Redis_url = "redis://localhost:6379"
+Redis_url = "localhost"
+Redis_port = 6379
+Max_Body_Size = 10 * 1024
+Timeout = (2,4)
+Opcua_Timeout = 2
 
 Check_State_Time = 30
 Sleep_Time = 0.1
@@ -16,8 +20,10 @@ Reconnect_Time_PLC = 1
 
 DOORS = {
     "127.0.0.1": Door(
+        reader_id=1,
         name="Door_1",
         reader_ip="127.0.0.1",
+        reader_port=80,
         reader_user="admin",
         reader_psw="admin",
         door_state_output_id=1,
@@ -26,6 +32,5 @@ DOORS = {
         door_state_node_id="ns=3;s=Door_State_Tag",
         guid_flag_node_id="ns=1;s=Guid_Flag_Tag",
         door_state_flag_node_id="ns=3;s=Door_State_Flag_Tag"
-    ),
-    # "192.168.1.21": Door(name="Door_2", ...)
+    )
 }

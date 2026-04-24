@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 import redis
 import uvicorn
 import xmltodict
@@ -9,7 +9,14 @@ from opcua.ua.uaerrors import UaStatusCodeError
 from opcua import Client
 
 app = FastAPI()
-queue = redis.from_url(Redis_url)
+queue = redis.Redis(
+    host=Redis_url,
+    port=Redis_port,
+    db=0,
+    socket_timeout=1.0,
+    socket_connect_timeout=1.0,
+    retry_on_timeout=False,
+    decode_responses=True)
 
 #------------------- Flask pour les notifications du lecteur ------------------#
 @app.post("/")
@@ -18,8 +25,34 @@ def home():
 
 @app.post(URL_Event_Notification)
 async def notifications(request: Request):
-    data = await request.body()
-    queue.lpush("Rfid_Queue", data)
+    content_length = request.headers.get("content-length")
+    if content_length and int(content_length) > Max_Body_Size:
+        raise HTTPException(status_code=413, detail="Payload too large")
+
+    body = await request.body()
+
+    if not body:
+        raise HTTPException(status_code=400, detail="Empty body")
+
+    if len(body) > Max_Body_Size:
+        raise HTTPException(status_code=413, detail="Payload too large")
+
+    data = body.decode("utf-8")
+
+    try:
+        parsed = xmltodict.parse(data)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid XML")
+    
+    if parsed["EventNotificationAlert"]["ipAddress"] in DOORS:
+        try:
+            queue.lpush("Rfid_Queue", data)
+        except redis.TimeoutError:
+            raise HTTPException(status_code=503, detail="Queue timeout")
+        except redis.RedisError:
+            raise HTTPException(status_code=503, detail="Queue unavailable")
+    else:
+        raise HTTPException(status_code=403, detail="Unknown reader IP")
     return {"status": "ok"}
 
 ###-------------------Boucle Principale pour le traitement des requêtes------------------#
@@ -33,7 +66,7 @@ def Gateway_Main_Loop(url_Serveur_PLC):
     """
     while True:
         try:
-            client = Client(url_Serveur_PLC)
+            client = Client(url_Serveur_PLC,timeout=Opcua_Timeout)
             client.set_security_string(f"Basic256Sha256,SignAndEncrypt,{Client_certificate_path},{Client_key_path}")
             client.connect()
             print("Connected to PLC")
@@ -42,9 +75,7 @@ def Gateway_Main_Loop(url_Serveur_PLC):
             sleep(Reconnect_Time_PLC)
             continue
 
-        plc_lost = False
-
-        while not plc_lost:
+        while True:
             try:
                 #---Gestion de la queue des connexions---#
                 Rfid_task = queue.lpop("Rfid_Queue")
@@ -76,12 +107,17 @@ def Gateway_Main_Loop(url_Serveur_PLC):
             #---Gestion de la reconnexion en cas de perte de connexion avec le PLC---#
             except UaStatusCodeError as e:
                 print("Connexion PLC perdue, reconnexion...", e)
-                client.disconnect()
-                plc_lost = True
+                client.disconnect() 
 
             except Exception as e:
                 print("Erreur non critique:", e)
         
 if __name__ == "__main__":
+    for ip, door in DOORS.items():
+        try:
+            door.setup_listener()
+        except (ConnectionError, RuntimeError) as e:
+            print(f"[WARN] {e} — poursuite du démarrage sans le lecteur d'IP {door.reader_ip}")
+
     threading.Thread(target=Gateway_Main_Loop, args=(Url_Serveur_PLC,), daemon=True).start()
     uvicorn.run(app, host=Uvicorn_Host, port=Uvicorn_Port)
