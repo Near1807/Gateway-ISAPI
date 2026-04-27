@@ -205,7 +205,7 @@ class Door:
         """
 
         base_url     = f"http://{self.reader_ip}:{self.reader_port}"
-        callback_url = f"http://{Uvicorn_Host}:{Uvicorn_Port}/rfid/event"
+        callback_url = f"http://{Uvicorn_Host}:{Uvicorn_Port}{URL_Event_Notification}"
         auth         = HTTPDigestAuth(self.reader_user, self.reader_psw)
         headers      = {"Content-Type": "application/xml"}
 
@@ -265,3 +265,100 @@ class Door:
                 f"le device ne peut pas joindre {Uvicorn_Host}:{Uvicorn_Port}"
             )
             return False
+        
+
+def load_guid(self, guid: str, employee_no: str, modes: list[int]):
+    """
+    Charge un GUID en mémoire du reader.
+
+    Args:
+        guid        : identifiant unique (cardNo)
+        employee_no : personne associée
+        modes       : liste de card types (1=RFID, 9=QR)
+    """
+    url     = f"http://{self.reader_ip}:{self.reader_port}/ISAPI/AccessControl/CardInfo/SetUp?format=json"
+    auth    = HTTPDigestAuth(self.reader_user, self.reader_psw)
+    headers = {"Content-Type": "application/xml"}
+
+    for mode in modes:
+        payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+            <CardInfo xmlns="http://www.isapi.org/ver20/XMLSchema">
+                <employeeNo>{employee_no}</employeeNo>
+                <cardNo>{guid}</cardNo>
+                <cardType>{mode}</cardType>
+            </CardInfo>"""
+
+        try:
+            resp = requests.put(url, data=payload.encode("utf-8"), headers=headers, auth=auth, timeout=Timeout)
+            if resp.ok:
+                print(f"[{self.name}] GUID {guid} chargé ({mode}) ✓")
+            else:
+                print(f"[{self.name}] Erreur chargement ({mode}) : {resp.status_code} — {resp.text}")
+        except Exception as e:
+            print(f"[{self.name}] Erreur HTTP ({mode}) : {e}")
+
+
+def delete_guid(self, card_no: str):
+    """
+    Supprime un GUID de la mémoire du reader.
+
+    Args:
+        card_no : numéro de carte RFID à supprimer
+    """
+    url     = f"http://{self.reader_ip}:{self.reader_port}/ISAPI/AccessControl/CardInfo/Delete"
+    auth    = HTTPDigestAuth(self.reader_user, self.reader_psw)
+    headers = {"Content-Type": "application/xml"}
+
+    payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<CardInfoDelCond xmlns="http://www.isapi.org/ver20/XMLSchema">
+    <CardNoList>
+        <cardNo>{card_no}</cardNo>
+    </CardNoList>
+</CardInfoDelCond>"""
+
+    try:
+        resp = requests.put(url, data=payload.encode("utf-8"), headers=headers, auth=auth, timeout=Timeout)
+        if resp.ok:
+            print(f"[{self.name}] GUID {card_no} supprimé ✓")
+            return True
+        else:
+            print(f"[{self.name}] Erreur suppression : {resp.status_code} — {resp.text}")
+            return False
+    except Exception as e:
+        print(f"[{self.name}] Erreur HTTP : {e}")
+        return False
+    
+
+
+def remote_check(self, serial_no: int, granted: bool):
+    """
+    Répond à une demande de vérification déportée.
+    À appeler après réception d'un event avec remoteCheck=true.
+
+    Args:
+        serial_no : serialNo reçu dans le payload de l'event (identifiant du scan en attente)
+        granted   : True = accès accordé → porte ouvre / False = accès refusé
+    """
+    url     = f"http://{self.reader_ip}:{self.reader_port}/ISAPI/AccessControl/remoteCheck"
+    auth    = HTTPDigestAuth(self.reader_user, self.reader_psw)
+    headers = {"Content-Type": "application/xml"}
+
+    payload = f"""<?xml version="1.0" encoding="UTF-8"?>
+<RemoteCheck xmlns="http://www.isapi.org/ver20/XMLSchema">
+    <serialNo>{serial_no}</serialNo>
+    <checkResult>{"success" if granted else "failed"}</checkResult>
+</RemoteCheck>"""
+
+    try:
+        resp = requests.put(url, data=payload.encode("utf-8"),
+                            headers=headers, auth=auth, timeout=Timeout)
+        result = "ACCORDÉ ✓" if granted else "REFUSÉ ✗"
+        if resp.ok:
+            print(f"[{self.name}] RemoteCheck {serial_no} → {result}")
+            return True
+        else:
+            print(f"[{self.name}] Erreur remoteCheck : {resp.status_code} — {resp.text}")
+            return False
+    except Exception as e:
+        print(f"[{self.name}] Erreur HTTP remoteCheck : {e}")
+        return False
