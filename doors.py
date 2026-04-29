@@ -225,16 +225,18 @@ class Door:
             raise ConnectionError(f"[{self.reader_ip}] Réponse inattendue : HTTP {resp.status_code}")
     # ── Étape 2 : enregistrement du serveur comme destination push ─────────
         payload = f"""<?xml version="1.0" encoding="UTF-8"?>
-            <HttpHostNotification xmlns="http://www.isapi.org/ver20/XMLSchema" version="2.0">
-            <id>{self.host_id}</id>
-            <url>{callback_url}</url>
-            <protocolType>HTTP</protocolType>
-            <parameterFormatType>JSON</parameterFormatType>
-            <addressingFormatType>ipaddress</addressingFormatType>
-            <hostName>{Uvicorn_Host}</hostName>
-            <portNo>{Uvicorn_Port}</portNo>
-            <httpAuthenticationMethod>none</httpAuthenticationMethod>
-            </HttpHostNotification>"""
+            <HttpHostNotificationList xmlns="http://www.isapi.org/ver20/XMLSchema" version="2.0">
+                <HttpHostNotification>
+                    <id>{self.host_id}</id>
+                    <url>{callback_url}</url>
+                    <protocolType>HTTP</protocolType>
+                    <parameterFormatType>XML</parameterFormatType>
+                    <addressingFormatType>ipaddress</addressingFormatType>
+                    <hostName>{Uvicorn_Host}</hostName>
+                    <portNo>{Uvicorn_Port}</portNo>
+                    <httpAuthenticationMethod>none</httpAuthenticationMethod>
+                </HttpHostNotification>
+            </HttpHostNotificationList>"""
     
         resp = requests.put(
             f"{base_url}/ISAPI/Event/notification/httpHosts",

@@ -53,10 +53,19 @@ async def notifications(request: Request):
 
     return {"status": "ok"}
 
+
+
+
+
+
 if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=Uvicorn_Port)
+
+"""
     for ip, door in DOORS.items():
         try:
             door.setup_listener()
+            print
         except (ConnectionError, RuntimeError) as e:
             print(f"[WARN] {e} — poursuite du démarrage sans le lecteur d'IP {door.reader_ip}")
 
@@ -64,6 +73,4 @@ if __name__ == "__main__":
         target=Gateway_Main_Loop,
         args=(Url_Serveur_PLC, queue, DOORS),
         daemon=True
-    ).start()
-
-    uvicorn.run(app, host=Uvicorn_Host, port=Uvicorn_Port)
+    ).start()"""

@@ -4,7 +4,7 @@ URL_Event_Notification = "/events/rfid"
 Client_certificate_path = "path/to/certificate.pem"
 Client_key_path = "path/to/key.pem"
 
-Uvicorn_Host = "0.0.0.0"
+Uvicorn_Host = "192.168.8.100"
 Uvicorn_Port = 8080
 Redis_url = "localhost"
 Redis_port = 6379

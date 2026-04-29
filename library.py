@@ -92,13 +92,13 @@ def reader_has_opened_autonomous(event: dict) -> bool:
 
 def door_set_up():
     DOORS = {
-        "127.0.0.1": Door(
+        "192.168.8.1": Door(
             reader_id=1,
             name="Door_1",
-            reader_ip="127.0.0.1",
+            reader_ip="192.168.8.1",
             reader_port=80,
             reader_user="admin",
-            reader_psw="admin",
+            reader_psw="Automatec",
             door_state_output_id=1,
             guid_node_id="ns=1;s=Guid_Tag",
             door_node_id="ns=2;s=Door_Tag",
