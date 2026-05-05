@@ -1,0 +1,193 @@
+{
+  "ip": "192.168.8.1",
+  "timestamp": "2026-05-04T15:07:52.081096",
+  "capabilities": {
+    "device_info": {
+      "status": "supported",
+      "data": {
+        "DeviceInfo": {
+          "@version": "2.0",
+          "@xmlns": "http://www.isapi.org/ver20/XMLSchema",
+          "deviceName": "Access Controller",
+          "deviceID": "255",
+          "model": "DS-K1T510MBWX-QRE1",
+          "serialNumber": "DS-K1T510MBWX-QRE120251219V042341ENGS0269846",
+          "macAddress": "88:DE:39:74:F0:D4",
+          "firmwareVersion": "V4.23.41",
+          "firmwareReleasedDate": "build 251219",
+          "encoderVersion": "V2.8",
+          "encoderReleasedDate": "build 251118",
+          "hardwareVersion": "V1.0.12",
+          "deviceType": "ACS",
+          "subDeviceType": "accessControlTerminal",
+          "localZoneNum": "0",
+          "alarmOutNum": "0",
+          "electroLockNum": "1",
+          "manufacturer": "hikvision",
+          "OEMCode": "1",
+          "marketType": "1",
+          "dispalyNum": "1",
+          "bspVersion": "V1.1.0.853388 build 250805",
+          "dspVersion": "V2.8 build 251118",
+          "productionDate": "2025-12-19"
+        }
+      }
+    },
+    "system_capabilities": {
+      "status": "supported",
+      "data": {
+        "DeviceCap": {
+          "@version": "2.0",
+          "@xmlns": "http://www.isapi.org/ver20/XMLSchema",
+          "isSupportReboot": "true",
+          "isSupportFactoryReset": "true",
+          "isSupportConfigurationData": "true",
+          "isSupportUpdatefirmware": "true",
+          "isSupportDeviceInfo": "true",
+          "SysCap": {
+            "isSupportDst": "true",
+            "NetworkCap": {
+              "isSupportWireless": "true",
+              "isSupportPPPoE": "false",
+              "isSupportBond": "false",
+              "isSupport802_1x": "false",
+              "isSupportFtp": "false",
+              "isSupportUpnp": "false",
+              "isSupportDdns": "false",
+              "isSupportHttps": "true",
+              "SnmpCap": {
+                "isSupport": "false"
+              },
+              "isSupportExtNetCfg": "false",
+              "isSupportSSH": "true",
+              "isSupportEZVIZ": "true",
+              "isSupportEhome": "true",
+              "isSupportWirelessDial": "false",
+              "isSupportWirelessServer": "true",
+              "VerificationCodeModification": {
+                "verificationCodeType": {
+                  "@opt": "normal,empty",
+                  "#text": "empty"
+                },
+                "isSupportDeclarationURL": "true",
+                "isSupportPrivacyPolicyURL": "true",
+                "verificationCodeModify": {
+                  "@opt": "true,false",
+                  "#text": "false"
+                },
+                "Hyperlinks": {
+                  "declarationURL": "https://www.hik-connect.com/views/terms/termsofservice.html",
+                  "privacyPolicyURL": "https://www.hik-connect.com/views/terms/privacypolicy.html"
+                }
+              },
+              "isSupportWebSocket": "true",
+              "isSupportWebSocketS": "true",
+              "isSupportSip": "true",
+              "isSupportEZVIZQRCode": "true",
+              "isSupportEZVIZUnbind": "true",
+              "isSupportAsynPingTest": "true"
+            },
+            "SerialCap": {
+              "rs485PortNums": "0"
+            },
+            "VideoCap": {
+              "videoInputPortNums": "1",
+              "videoOutputPortNums": "0",
+              "isSupportHeatmap": "false",
+              "isSupportCounting": "false",
+              "isSupportPreviewSwitch": "false",
+              "isSupportRecodStatus": "false",
+              "isSupportPrivacyMask": "false",
+              "isSupportBinocularPreviewSwitch": "false",
+              "isSupportCalibCheck": "false",
+              "isSupportPIP": "false"
+            },
+            "AudioCap": {
+              "audioInputNums": "1",
+              "audioOutputNums": "1",
+              "mixAudioInSet": "false",
+              "mixAudioOutSet": "false",
+              "isSupportAudioMixing": "false",
+              "isSupportAudioInConfig": "true",
+              "isSupportAudioCodingPriorityParams": "true"
+            },
+            "isSupportSubscribeEvent": "true",
+            "isSupportTimeCap": "true",
+            "isSupportPostUpdateFirmware": "true",
+            "isSupportPostConfigData": "true"
+          },
+          "voicetalkNums": "1",
+          "isSupportSnapshot": "true",
+          "SecurityCap": {
+            "supportUserNums": "1",
+            "userBondIpNums": "1",
+            "userBondMacNums": "1",
+            "isSupCertificate": "false"
+          }
+        }
+      }
+    },
+    "audio_capabilities": {
+      "status": "supported",
+      "data": {
+        "AudioCap": {
+          "@version": "2.0",
+          "@xmlns": "http://www.isapi.org/ver20/XMLSchema",
+          "audioInputNums": "1",
+          "audioOutputNums": "1",
+          "mixAudioInSet": "false",
+          "mixAudioOutSet": "false",
+          "isSupportAudioMixing": "false",
+          "isSupportAudioInConfig": "true",
+          "isSupportAudioCodingPriorityParams": "true"
+        }
+      }
+    },
+    "audio_config": {
+      "status": "not_found"
+    },
+    "door_capabilities": {
+      "status": "not_found"
+    },
+    "door_config": {
+      "status": "supported",
+      "data": {
+        "DoorParam": {
+          "@version": "2.0",
+          "@xmlns": "http://www.isapi.org/ver20/XMLSchema",
+          "openDuration": "3",
+          "disabledOpenDuration": "15",
+          "magneticAlarmTimeout": "30",
+          "enableDoorLock": "true"
+        }
+      }
+    },
+    "intercom_capabilities": {
+      "status": "not_found"
+    },
+    "event_capabilities": {
+      "status": "not_found"
+    },
+    "access_control_capabilities": {
+      "status": "supported",
+      "data": {
+        "AccessControl": {
+          "@version": "2.0",
+          "@xmlns": "http://www.isapi.org/ver20/XMLSchema",
+          "isSupportRemoteControlDoor": "true",
+          "isSupportCardInfo": "true",
+          "isSupportAcsEvent": "true",
+          "isSupportAcsWorkStatus": "true"
+        }
+      }
+    },
+    "streaming_capabilities": {
+      "status": "not_found"
+    }
+  },
+  "summary": {
+    "audio_control_likely": true,
+    "door_control_likely": true,
+    "event_streaming_likely": false
+  }
+}
