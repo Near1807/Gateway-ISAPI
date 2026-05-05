@@ -23,11 +23,7 @@ Il agit comme couche intermédiaire entre :
 # Imports
 # ==============================================================================
 
-import xmltodict                  # Parsing XML (potentiellement utilisé ailleurs)
 from config import *              # Variables globales de configuration
-from time import sleep            # Gestion des pauses (non utilisé ici directement)
-from opcua.ua.uaerrors import UaStatusCodeError  # Gestion erreurs OPC UA
-from opcua import Client          # Client OPC UA
 import json                       # Parsing JSON
 from doors import *               # Classe Door et logique associée
 

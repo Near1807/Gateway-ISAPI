@@ -25,7 +25,6 @@ Dépendances internes :
 # =========================
 # Imports standards Python
 # =========================
-import json                  # Manipulation JSON (potentiellement utilisé ailleurs)
 import time                  # Gestion du temps (non utilisé ici directement)
 import threading             # Exécution en thread parallèle
 from queue import Queue, Empty  # File thread-safe pour gestion des événements
@@ -33,10 +32,8 @@ from queue import Queue, Empty  # File thread-safe pour gestion des événements
 # =========================
 # Imports externes
 # =========================
-import requests              # Requêtes HTTP (non utilisé ici directement)
 import uvicorn               # Serveur ASGI pour FastAPI
-from fastapi import FastAPI, HTTPException, Request, Response
-from requests.auth import HTTPDigestAuth  # Authentification HTTP (non utilisée ici)
+from fastapi import FastAPI, HTTPException, Request
 
 # =========================
 # Imports internes projet

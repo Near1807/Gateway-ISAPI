@@ -1,10 +1,9 @@
 import requests
 from requests.auth import HTTPDigestAuth
-import xmltodict
 from config import *
 from opcua import *
 import os
-from datetime import datetime,timedelta
+from datetime import datetime
 
 #================================================================================#
 #    Classe Door - Driver complet lecteur Hikvision + intégration industrielle   #
