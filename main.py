@@ -152,7 +152,6 @@ async def notifications(request: Request):
 
     # Extraction de l'événement via fonction custom
     event = extract_event(body)
-
     # Si extraction échoue
     if event is None:
         print("event illisible")
@@ -160,7 +159,6 @@ async def notifications(request: Request):
 
     # Ajout dans la queue pour traitement différé
     queue.put(event)
-
     return {"status": "queued"}
 
 
@@ -182,14 +180,8 @@ if __name__ == "__main__":
 
     # Initialisation des portes
     doors = door_set_up()
-
     # Configuration des lecteurs associés aux portes
     configure_readers(doors)
-
-    # Activation des lights blanches à 50% (exemple d'usage des méthodes de doors)
-    for ip, door in doors.items():
-        door.turn_light_on(50)
-
     # Lancement du thread de traitement asynchrone
     threading.Thread(target=main_loop, daemon=True).start()
 

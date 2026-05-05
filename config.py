@@ -19,25 +19,6 @@ Toutes les valeurs ici doivent être adaptées à l'environnement cible
 ================================================================================
 """
 
-
-# ==============================================================================
-# OPC UA (Communication avec le PLC / automate industriel)
-# ==============================================================================
-
-# URL du serveur OPC UA (PLC)
-# Format standard : opc.tcp://<ip>:<port>
-# Exemple : automate industriel exposant ses variables via OPC UA
-Url_Serveur_PLC = "opc.tcp://192.168.1.10:4840"
-
-# Chemin utilisé pour les notifications d'événements RFID
-# Typiquement utilisé dans l'API pour recevoir les événements
-
-
-# Timeout (en secondes) pour les opérations OPC UA
-# Détermine combien de temps on attend une réponse du PLC
-Opcua_Timeout = 2
-
-
 # ==============================================================================
 # Sécurité - Certificats client
 # ==============================================================================
@@ -103,4 +84,4 @@ Sleep_Time = 0.1
 # - Doit exister
 # - Permissions d'écriture nécessaires
 # - Chemin Windows ici (raw string pour éviter les erreurs d'échappement)
-Picture_Save_Path = r"C:\Users\Thomas\Documents\Programmation\Python_Files\Gateway ISAPI\Pictures"
+Picture_Save_Path = r"Pictures"
